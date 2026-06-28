@@ -10,105 +10,101 @@
 <link rel="manifest" href="/manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --cream: #FDF6E3; --butter: #FFF3C4; --peach: #FFE5D0; --sage: #E8F0E0;
-  --brown: #8B6F5E; --brown-light: #C4A882; --orange: #E8845A; --green: #7BAF7B;
-  --text: #5C4A3A; --text-light: #A08878;
-}
-body { font-family: 'Gaegu', cursive; background: var(--cream); }
-.app { max-width: 390px; margin: 0 auto; min-height: 100vh; background: var(--cream); display: flex; flex-direction: column; padding-bottom: 70px; }
-.topbar { padding: 16px 18px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #DDD0B8; }
-.date-badge { font-size: 12px; color: var(--brown); background: var(--butter); border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; padding: 3px 12px; border: 1.5px solid #DDD0B8; box-shadow: 2px 2px 0 #DDD0B8; }
-.screen { display: none; flex: 1; flex-direction: column; padding: 18px; }
-.screen.on { display: flex; }
-.screen-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-.screen-sub { font-size: 14px; color: var(--text-light); margin-bottom: 16px; }
-.progress-wrap { margin-bottom: 18px; }
-.progress-label { font-size: 14px; color: var(--text-light); margin-bottom: 6px; }
-.progress-bar { height: 7px; background: #EDE0CC; border-radius: 99px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--orange); border-radius: 99px; transition: width .5s cubic-bezier(.34,1.56,.64,1); }
-.mission-card { background: #fff; border-radius: 20px 6px 18px 6px/6px 18px 6px 20px; border: 2px solid #E0D4C0; padding: 16px; margin-bottom: 12px; box-shadow: 3px 4px 0 #E0D4C0; }
-.mission-card.done { background: var(--sage); border-color: #B8D4B8; box-shadow: 3px 4px 0 #B8D4B8; }
-.mission-card.active-pick { background: var(--peach); border-color: #E8C4A8; box-shadow: 3px 4px 0 #E8C4A8; }
-.mc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.mc-img { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 28px; }
-.mc-info { flex: 1; }
-.mc-label { font-size: 18px; font-weight: 700; color: var(--text); }
-.mc-desc { font-size: 13px; color: var(--text-light); margin-top: 1px; }
-.mission-card.done .mc-label { color: #4A7A4A; }
-.mc-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #E0D4C0; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
-.mission-card.done .mc-check { background: var(--green); border-color: var(--green); color: white; }
-.items-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.item-pill { padding: 5px 13px; border-radius: 255px 8px 200px 8px/8px 200px 8px 255px; border: 1.5px solid #DDD0B8; background: var(--cream); font-size: 13px; color: var(--text); cursor: pointer; font-family: 'Gaegu', cursive; transition: all .1s; }
-.item-pill:active { transform: scale(.91); }
-.item-pill.picked { background: var(--orange); border-color: var(--orange); color: white; box-shadow: 2px 2px 0 #C86A3A; }
-.mission-card.done .item-pill.picked { background: var(--green); border-color: var(--green); box-shadow: 2px 2px 0 #4A7A4A; }
-.complete-btn { margin-top: 11px; width: 100%; padding: 9px; border-radius: 8px 200px 8px 200px/200px 8px 200px 8px; background: var(--orange); border: none; color: white; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Gaegu', cursive; box-shadow: 3px 3px 0 #C86A3A; display: none; }
-.complete-btn.show { display: block; }
-.memo-section { margin-top: 16px; margin-bottom: 4px; }
-.memo-label { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-.memo-input { width: 100%; padding: 12px 16px; border-radius: 8px 200px 8px 200px/200px 8px 200px 8px; border: 2px solid #DDD0B8; background: #fff; font-size: 15px; font-family: 'Gaegu', cursive; color: var(--text); outline: none; box-shadow: 3px 3px 0 #E0D4C0; }
-.memo-input:focus { border-color: var(--orange); }
-.memo-input::placeholder { color: var(--brown-light); }
-.spacer { flex: 1; min-height: 16px; }
-.finish-btn { padding: 14px; border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; background: var(--butter); border: 2px solid #DDD0B8; color: var(--text-light); font-size: 17px; font-weight: 700; cursor: pointer; font-family: 'Gaegu', cursive; box-shadow: 3px 4px 0 #DDD0B8; }
-.finish-btn.ready { background: var(--text); border-color: var(--text); color: var(--cream); box-shadow: 3px 4px 0 #3A2A1A; }
-.card-screen { align-items: stretch; }
-.card { background: #fff; border-radius: 16px 4px 20px 4px/4px 20px 4px 16px; border: 2px solid #E0D4C0; padding: 22px 20px; box-shadow: 5px 6px 0 #E0D4C0; margin-bottom: 16px; position: relative; }
-.corner { position: absolute; font-size: 13px; color: #DDD0B8; }
-.corner.tl { top:8px; left:10px; } .corner.tr { top:8px; right:10px; }
-.corner.bl { bottom:8px; left:10px; } .corner.br { bottom:8px; right:10px; }
-.card-date { font-size: 13px; color: var(--text-light); margin-bottom: 4px; }
-.card-title { font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 16px; }
-.card-title span { color: var(--orange); }
-.card-collections { display: flex; flex-direction: column; gap: 11px; margin-bottom: 16px; }
-.col-item { display: flex; align-items: center; gap: 12px; }
-.col-emoji { font-size: 22px; flex-shrink: 0; width: 42px; text-align: center; }
-.col-text { flex: 1; }
-.col-mission { font-size: 12px; color: var(--text-light); }
-.col-pick { font-size: 15px; font-weight: 700; color: var(--text); }
-.col-pick.done { color: var(--green); }
-.col-badge { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
-.col-badge.done { background: var(--sage); color: var(--green); }
-.col-badge.try { background: var(--peach); color: var(--orange); }
-.dashed { border: none; border-top: 2px dashed #E0D4C0; margin: 14px 0; }
-.card-memo-wrap { margin-bottom: 14px; }
-.card-memo-label { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
-.card-memo-text { font-size: 16px; font-weight: 700; color: var(--text); background: var(--butter); border-radius: 8px 200px 8px 200px/200px 8px 200px 8px; padding: 9px 16px; border: 1.5px solid #DDD0B8; display: inline-block; max-width: 100%; word-break: break-all; }
-.stamps-wrap { margin-bottom: 14px; }
-.stamps-label { font-size: 12px; color: var(--text-light); margin-bottom: 8px; }
-.stamps-row { display: flex; gap: 10px; align-items: center; }
-.stamp-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.stamp { width: 52px; height: 52px; border-radius: 50%; border: 2px dashed #DDD0B8; background: #F5EFE0; display: flex; align-items: center; justify-content: center; font-size: 20px; position: relative; }
-.stamp.filled { border-style: solid; border-color: var(--orange); background: var(--peach); box-shadow: 0 0 0 3px #FFE5D0; }
-.stamp.filled::after { content: '✦'; position: absolute; font-size: 22px; color: var(--orange); }
-.stamp-name { font-size: 11px; color: var(--text-light); }
-.stamp-arrow { font-size: 18px; color: #DDD0B8; margin-bottom: 14px; }
-.card-footer { display: flex; justify-content: space-between; align-items: center; }
-.watermark { font-size: 14px; color: var(--brown-light); font-weight: 700; }
-.done-count { font-size: 13px; color: var(--green); font-weight: 700; }
-.btn-main { width: 100%; padding: 14px; border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; background: var(--text); border: none; color: var(--cream); font-size: 17px; font-weight: 700; cursor: pointer; font-family: 'Gaegu', cursive; box-shadow: 3px 4px 0 #3A2A1A; margin-bottom: 10px; }
-.btn-ghost { width: 100%; padding: 12px; border-radius: 15px 255px 15px 225px/225px 15px 255px 15px; background: var(--cream); border: 2px solid #DDD0B8; color: var(--text-light); font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Gaegu', cursive; box-shadow: 3px 4px 0 #DDD0B8; }
-.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--text); color: var(--cream); border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; padding: 9px 20px; font-size: 14px; font-family: 'Gaegu', cursive; opacity: 0; transition: all .25s; pointer-events: none; white-space: nowrap; z-index: 99; box-shadow: 3px 3px 0 #3A2A1A; }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; display: flex; border-top: 2px dashed #DDD0B8; background: var(--cream); padding: 10px 0 max(env(safe-area-inset-bottom),8px); z-index: 50; }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 2px 0; opacity: .4; transition: opacity .15s; }
-.nav-item.on { opacity: 1; }
-.nav-icon { font-size: 22px; }
-.nav-label { font-size: 11px; color: var(--text); font-weight: 700; }
-.hist-card { background: #fff; border-radius: 16px 4px 18px 4px/4px 18px 4px 16px; border: 2px solid #E0D4C0; padding: 16px 18px; margin-bottom: 12px; box-shadow: 3px 4px 0 #E0D4C0; }
-.hist-date { font-size: 12px; color: var(--text-light); margin-bottom: 8px; font-weight: 500; }
-.hist-items { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
-.hist-pill { padding: 4px 12px; border-radius: 255px 8px 200px 8px/8px 200px 8px 255px; background: var(--butter); border: 1.5px solid #DDD0B8; font-size: 13px; color: var(--text); }
-.hist-pill.done { background: var(--sage); border-color: #B8D4B8; color: #4A7A4A; }
-.hist-memo { font-size: 13px; color: var(--brown-light); margin-top: 4px; font-style: italic; }
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--cream:#FDF6E3;--butter:#FFF3C4;--peach:#FFE5D0;--sage:#E8F0E0;--brown:#8B6F5E;--brown-light:#C4A882;--orange:#E8845A;--green:#7BAF7B;--text:#5C4A3A;--text-light:#A08878;}
+body{font-family:'Gaegu',cursive;background:var(--cream);}
+.app{max-width:390px;margin:0 auto;min-height:100vh;background:var(--cream);display:flex;flex-direction:column;padding-bottom:70px;}
+.topbar{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px dashed #DDD0B8;}
+.date-badge{font-size:12px;color:var(--brown);background:var(--butter);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;padding:3px 12px;border:1.5px solid #DDD0B8;box-shadow:2px 2px 0 #DDD0B8;}
+.screen{display:none;flex:1;flex-direction:column;padding:18px;}
+.screen.on{display:flex;}
+.screen-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.screen-sub{font-size:14px;color:var(--text-light);margin-bottom:16px;}
+.progress-wrap{margin-bottom:18px;}
+.progress-label{font-size:14px;color:var(--text-light);margin-bottom:6px;}
+.progress-bar{height:7px;background:#EDE0CC;border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--orange);border-radius:99px;transition:width .5s;}
+.mission-card{background:#fff;border-radius:20px 6px 18px 6px/6px 18px 6px 20px;border:2px solid #E0D4C0;padding:16px;margin-bottom:12px;box-shadow:3px 4px 0 #E0D4C0;}
+.mission-card.done{background:var(--sage);border-color:#B8D4B8;box-shadow:3px 4px 0 #B8D4B8;}
+.mission-card.active-pick{background:var(--peach);border-color:#E8C4A8;box-shadow:3px 4px 0 #E8C4A8;}
+.mc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.mc-emoji{font-size:28px;width:44px;text-align:center;flex-shrink:0;}
+.mc-info{flex:1;}
+.mc-label{font-size:18px;font-weight:700;color:var(--text);}
+.mc-desc{font-size:13px;color:var(--text-light);margin-top:1px;}
+.mission-card.done .mc-label{color:#4A7A4A;}
+.mc-check{width:28px;height:28px;border-radius:50%;border:2px solid #E0D4C0;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.mission-card.done .mc-check{background:var(--green);border-color:var(--green);color:white;}
+.items-row{display:flex;flex-wrap:wrap;gap:6px;}
+.item-pill{padding:5px 13px;border-radius:255px 8px 200px 8px/8px 200px 8px 255px;border:1.5px solid #DDD0B8;background:var(--cream);font-size:13px;color:var(--text);cursor:pointer;font-family:'Gaegu',cursive;}
+.item-pill.picked{background:var(--orange);border-color:var(--orange);color:white;box-shadow:2px 2px 0 #C86A3A;}
+.mission-card.done .item-pill.picked{background:var(--green);border-color:var(--green);box-shadow:2px 2px 0 #4A7A4A;}
+.complete-btn{margin-top:11px;width:100%;padding:9px;border-radius:8px 200px 8px 200px/200px 8px 200px 8px;background:var(--orange);border:none;color:white;font-size:15px;font-weight:700;cursor:pointer;font-family:'Gaegu',cursive;box-shadow:3px 3px 0 #C86A3A;display:none;}
+.complete-btn.show{display:block;}
+.memo-section{margin-top:16px;margin-bottom:4px;}
+.memo-label{font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.memo-input{width:100%;padding:12px 16px;border-radius:8px 200px 8px 200px/200px 8px 200px 8px;border:2px solid #DDD0B8;background:#fff;font-size:15px;font-family:'Gaegu',cursive;color:var(--text);outline:none;box-shadow:3px 3px 0 #E0D4C0;}
+.memo-input:focus{border-color:var(--orange);}
+.memo-input::placeholder{color:var(--brown-light);}
+.spacer{flex:1;min-height:16px;}
+.finish-btn{padding:14px;border-radius:255px 15px 225px 15px/15px 225px 15px 255px;background:var(--butter);border:2px solid #DDD0B8;color:var(--text-light);font-size:17px;font-weight:700;cursor:pointer;font-family:'Gaegu',cursive;box-shadow:3px 4px 0 #DDD0B8;}
+.finish-btn.ready{background:var(--text);border-color:var(--text);color:var(--cream);box-shadow:3px 4px 0 #3A2A1A;}
+.card-screen{align-items:stretch;}
+.card{background:#fff;border-radius:16px 4px 20px 4px/4px 20px 4px 16px;border:2px solid #E0D4C0;padding:22px 20px;box-shadow:5px 6px 0 #E0D4C0;margin-bottom:16px;position:relative;}
+.corner{position:absolute;font-size:13px;color:#DDD0B8;}
+.corner.tl{top:8px;left:10px;}.corner.tr{top:8px;right:10px;}
+.corner.bl{bottom:8px;left:10px;}.corner.br{bottom:8px;right:10px;}
+.card-date{font-size:13px;color:var(--text-light);margin-bottom:4px;}
+.card-title{font-size:24px;font-weight:700;color:var(--text);margin-bottom:16px;}
+.card-title span{color:var(--orange);}
+.card-collections{display:flex;flex-direction:column;gap:11px;margin-bottom:16px;}
+.col-item{display:flex;align-items:center;gap:12px;}
+.col-emoji{font-size:22px;flex-shrink:0;width:42px;text-align:center;}
+.col-text{flex:1;}
+.col-mission{font-size:12px;color:var(--text-light);}
+.col-pick{font-size:15px;font-weight:700;color:var(--text);}
+.col-pick.done{color:var(--green);}
+.col-badge{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:700;}
+.col-badge.done{background:var(--sage);color:var(--green);}
+.col-badge.try{background:var(--peach);color:var(--orange);}
+.dashed{border:none;border-top:2px dashed #E0D4C0;margin:14px 0;}
+.card-memo-wrap{margin-bottom:14px;}
+.card-memo-label{font-size:12px;color:var(--text-light);margin-bottom:6px;}
+.card-memo-text{font-size:16px;font-weight:700;color:var(--text);background:var(--butter);border-radius:8px 200px 8px 200px/200px 8px 200px 8px;padding:9px 16px;border:1.5px solid #DDD0B8;display:inline-block;max-width:100%;word-break:break-all;}
+.stamps-wrap{margin-bottom:14px;}
+.stamps-label{font-size:12px;color:var(--text-light);margin-bottom:8px;}
+.stamps-row{display:flex;gap:10px;align-items:center;}
+.stamp-item{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.stamp{width:52px;height:52px;border-radius:50%;border:2px dashed #DDD0B8;background:#F5EFE0;display:flex;align-items:center;justify-content:center;font-size:20px;position:relative;}
+.stamp.filled{border-style:solid;border-color:var(--orange);background:var(--peach);box-shadow:0 0 0 3px #FFE5D0;}
+.stamp.filled::after{content:'✦';position:absolute;font-size:22px;color:var(--orange);}
+.stamp-name{font-size:11px;color:var(--text-light);}
+.stamp-arrow{font-size:18px;color:#DDD0B8;margin-bottom:14px;}
+.card-footer{display:flex;justify-content:space-between;align-items:center;}
+.watermark{font-size:14px;color:var(--brown-light);font-weight:700;}
+.done-count{font-size:13px;color:var(--green);font-weight:700;}
+.btn-main{width:100%;padding:14px;border-radius:255px 15px 225px 15px/15px 225px 15px 255px;background:var(--text);border:none;color:var(--cream);font-size:17px;font-weight:700;cursor:pointer;font-family:'Gaegu',cursive;box-shadow:3px 4px 0 #3A2A1A;margin-bottom:10px;}
+.btn-ghost{width:100%;padding:12px;border-radius:15px 255px 15px 225px/225px 15px 255px 15px;background:var(--cream);border:2px solid #DDD0B8;color:var(--text-light);font-size:15px;font-weight:700;cursor:pointer;font-family:'Gaegu',cursive;box-shadow:3px 4px 0 #DDD0B8;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:var(--cream);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;padding:9px 20px;font-size:14px;font-family:'Gaegu',cursive;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:99;box-shadow:3px 3px 0 #3A2A1A;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:390px;display:flex;border-top:2px dashed #DDD0B8;background:var(--cream);padding:10px 0 max(env(safe-area-inset-bottom),8px);z-index:50;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:2px 0;opacity:.4;transition:opacity .15s;}
+.nav-item.on{opacity:1;}
+.nav-icon{font-size:22px;}
+.nav-label{font-size:11px;color:var(--text);font-weight:700;}
+.hist-card{background:#fff;border-radius:16px 4px 18px 4px/4px 18px 4px 16px;border:2px solid #E0D4C0;padding:16px 18px;margin-bottom:12px;box-shadow:3px 4px 0 #E0D4C0;}
+.hist-date{font-size:12px;color:var(--text-light);margin-bottom:8px;font-weight:500;}
+.hist-items{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+.hist-pill{padding:4px 12px;border-radius:255px 8px 200px 8px/8px 200px 8px 255px;background:var(--butter);border:1.5px solid #DDD0B8;font-size:13px;color:var(--text);}
+.hist-pill.done{background:var(--sage);border-color:#B8D4B8;color:#4A7A4A;}
+.hist-memo{font-size:13px;color:var(--brown-light);margin-top:4px;font-style:italic;}
 </style>
 </head>
 <body>
 <div class="app">
+
   <div class="topbar">
-    <img src="icons/logo.png" alt="눈도장 쾅!" style="height:52px;object-fit:contain;" onerror="this.outerHTML='<div style=\'font-size:20px;font-weight:700;color:#5C4A3A;\'>눈도장 <span style=\'color:#E8845A;\'>쾅!</span></div>'">
+    <img src="icons/logo.png" alt="눈도장 쾅!" style="height:100px;object-fit:contain;" onerror="this.outerHTML='<span style=\'font-size:22px;font-weight:700;color:#5C4A3A;\'>눈도장 <span style=\'color:#E8845A;\'>쾅!</span></span>'">
     <div class="date-badge" id="date-badge"></div>
   </div>
 
@@ -163,6 +159,7 @@ body { font-family: 'Gaegu', cursive; background: var(--cream); }
       아직 기록이 없어요<br>오늘 첫 산책을 떠나봐요 🌿
     </div>
   </div>
+
 </div>
 
 <div class="bottom-nav">
@@ -188,104 +185,129 @@ var ALL_ITEMS = {
 function getDailyItems(pool, count) {
   var d = new Date();
   var seed = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
-  var shuffled = pool.slice();
-  for(var i=shuffled.length-1;i>0;i--){
-    seed = (seed*1664525+1013904223) & 0xffffffff;
-    var j = Math.abs(seed)%(i+1);
-    var tmp=shuffled[i]; shuffled[i]=shuffled[j]; shuffled[j]=tmp;
+  var arr = pool.slice();
+  for (var i = arr.length-1; i > 0; i--) {
+    seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+    var j = Math.abs(seed) % (i+1);
+    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
   }
-  return shuffled.slice(0,count);
+  return arr.slice(0, count);
 }
 
 var MISSIONS = [
-  { emoji:'🎨', label:'색깔 수집', desc:'오늘 눈에 띈 색깔은?', items:getDailyItems(ALL_ITEMS.color,6) },
-  { emoji:'🐾', label:'생명 수집', desc:'만난 생물이 있나요?',  items:getDailyItems(ALL_ITEMS.life,6) },
-  { emoji:'✨', label:'순간 수집', desc:'오늘 산책의 한 장면',  items:getDailyItems(ALL_ITEMS.moment,6) }
+  { emoji:'🎨', label:'색깔 수집', desc:'오늘 눈에 띈 색깔은?', items: getDailyItems(ALL_ITEMS.color, 6) },
+  { emoji:'🐾', label:'생명 수집', desc:'만난 생물이 있나요?', items: getDailyItems(ALL_ITEMS.life, 6) },
+  { emoji:'✨', label:'순간 수집', desc:'오늘 산책의 한 장면', items: getDailyItems(ALL_ITEMS.moment, 6) }
 ];
-var state = { picks:[null,null,null], done:[false,false,false] };
 
-function today() { var d=new Date(); return (d.getMonth()+1)+'월 '+d.getDate()+'일'; }
+var state = { picks: [null, null, null], done: [false, false, false] };
+
+function today() {
+  var d = new Date();
+  return (d.getMonth()+1) + '월 ' + d.getDate() + '일';
+}
+
 document.getElementById('date-badge').textContent = today();
-document.getElementById('card-date').textContent = today()+' 산책 기록';
+document.getElementById('card-date').textContent = today() + ' 산책 기록';
 
 function goScreen(name) {
-  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
-  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('on'); });
-  document.getElementById('screen-'+name).classList.add('on');
-  document.getElementById('nav-'+name).classList.add('on');
-  if(name==='history') renderHistory();
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('on'); });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('on'); });
+  document.getElementById('screen-' + name).classList.add('on');
+  document.getElementById('nav-' + name).classList.add('on');
+  if (name === 'history') renderHistory();
 }
 
 function saveRecord() {
-  var doneCount=state.done.filter(Boolean).length;
-  if(doneCount===0 && !state.picks.some(Boolean)) return;
-  var d=new Date();
-  var dateKey=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-  var records=JSON.parse(localStorage.getItem('nd_records')||'[]');
-  records=records.filter(function(r){ return r.date!==dateKey; });
-  var collected=[];
-  MISSIONS.forEach(function(m,mi){ if(state.picks[mi]) collected.push({label:m.label,pick:state.picks[mi],done:state.done[mi],emoji:m.emoji}); });
-  records.unshift({date:dateKey,collected:collected,memo:document.getElementById('memo-input').value.trim(),doneCount:doneCount});
-  if(records.length>30) records=records.slice(0,30);
-  localStorage.setItem('nd_records',JSON.stringify(records));
+  var doneCount = state.done.filter(Boolean).length;
+  if (doneCount === 0 && !state.picks.some(Boolean)) return;
+  var d = new Date();
+  var dateKey = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+  var records = JSON.parse(localStorage.getItem('nd_records') || '[]');
+  records = records.filter(function(r) { return r.date !== dateKey; });
+  var collected = [];
+  MISSIONS.forEach(function(m, mi) {
+    if (state.picks[mi]) collected.push({ label: m.label, pick: state.picks[mi], done: state.done[mi], emoji: m.emoji });
+  });
+  records.unshift({ date: dateKey, collected: collected, memo: document.getElementById('memo-input').value.trim(), doneCount: doneCount });
+  if (records.length > 30) records = records.slice(0, 30);
+  localStorage.setItem('nd_records', JSON.stringify(records));
 }
 
 function renderHistory() {
-  var records=JSON.parse(localStorage.getItem('nd_records')||'[]');
-  var list=document.getElementById('history-list');
-  var empty=document.getElementById('history-empty');
-  list.innerHTML='';
-  if(records.length===0){ list.style.display='none'; empty.style.display='block'; return; }
-  list.style.display='block'; empty.style.display='none';
-  records.forEach(function(r){
-    var parts=r.date.split('-');
-    var card=document.createElement('div'); card.className='hist-card';
-    var dateEl=document.createElement('div'); dateEl.className='hist-date';
-    dateEl.textContent=parts[1]+'월 '+parts[2]+'일 · '+r.doneCount+'/3 완료';
+  var records = JSON.parse(localStorage.getItem('nd_records') || '[]');
+  var list = document.getElementById('history-list');
+  var empty = document.getElementById('history-empty');
+  list.innerHTML = '';
+  if (records.length === 0) { list.style.display = 'none'; empty.style.display = 'block'; return; }
+  list.style.display = 'block'; empty.style.display = 'none';
+  records.forEach(function(r) {
+    var parts = r.date.split('-');
+    var card = document.createElement('div'); card.className = 'hist-card';
+    var dateEl = document.createElement('div'); dateEl.className = 'hist-date';
+    dateEl.textContent = parts[1] + '월 ' + parts[2] + '일 · ' + r.doneCount + '/3 완료';
     card.appendChild(dateEl);
-    var row=document.createElement('div'); row.className='hist-items';
-    r.collected.forEach(function(c){
-      var pill=document.createElement('div');
-      pill.className='hist-pill'+(c.done?' done':'');
-      pill.textContent=(c.emoji||'')+' '+c.pick;
+    var row = document.createElement('div'); row.className = 'hist-items';
+    r.collected.forEach(function(c) {
+      var pill = document.createElement('div');
+      pill.className = 'hist-pill' + (c.done ? ' done' : '');
+      pill.textContent = (c.emoji || '') + ' ' + c.pick;
       row.appendChild(pill);
     });
     card.appendChild(row);
-    if(r.memo){ var memo=document.createElement('div'); memo.className='hist-memo'; memo.textContent='✍️ '+r.memo; card.appendChild(memo); }
+    if (r.memo) {
+      var memo = document.createElement('div'); memo.className = 'hist-memo';
+      memo.textContent = '✍️ ' + r.memo;
+      card.appendChild(memo);
+    }
     list.appendChild(card);
   });
 }
 
 function render() {
-  var container=document.getElementById('missions-container');
-  container.innerHTML='';
-  var doneCount=state.done.filter(Boolean).length;
-  document.getElementById('progress-label').textContent=doneCount+' / 3 완료';
-  document.getElementById('progress-fill').style.width=(doneCount/3*100)+'%';
-  document.getElementById('finish-btn').className='finish-btn'+(doneCount>0||state.picks.some(Boolean)?' ready':'');
-  MISSIONS.forEach(function(m,mi){
-    var card=document.createElement('div');
-    card.className='mission-card'+(state.done[mi]?' done':'')+((!state.done[mi]&&state.picks[mi])?' active-pick':'');
-    var top=document.createElement('div'); top.className='mc-top';
-    var imgW=document.createElement('div'); imgW.className='mc-img'; imgW.textContent=m.emoji;
-    var info=document.createElement('div'); info.className='mc-info';
-    info.innerHTML='<div class="mc-label">'+m.label+'</div><div class="mc-desc">'+m.desc+'</div>';
-    var chk=document.createElement('div'); chk.className='mc-check'; chk.textContent=state.done[mi]?'✓':'';
-    top.appendChild(imgW); top.appendChild(info); top.appendChild(chk);
+  var container = document.getElementById('missions-container');
+  container.innerHTML = '';
+  var doneCount = state.done.filter(Boolean).length;
+  document.getElementById('progress-label').textContent = doneCount + ' / 3 완료';
+  document.getElementById('progress-fill').style.width = (doneCount / 3 * 100) + '%';
+  document.getElementById('finish-btn').className = 'finish-btn' + (doneCount > 0 || state.picks.some(Boolean) ? ' ready' : '');
+
+  MISSIONS.forEach(function(m, mi) {
+    var card = document.createElement('div');
+    card.className = 'mission-card' + (state.done[mi] ? ' done' : '') + (!state.done[mi] && state.picks[mi] ? ' active-pick' : '');
+    var top = document.createElement('div'); top.className = 'mc-top';
+    var emo = document.createElement('div'); emo.className = 'mc-emoji'; emo.textContent = m.emoji;
+    var info = document.createElement('div'); info.className = 'mc-info';
+    info.innerHTML = '<div class="mc-label">' + m.label + '</div><div class="mc-desc">' + m.desc + '</div>';
+    var chk = document.createElement('div'); chk.className = 'mc-check';
+    chk.textContent = state.done[mi] ? '✓' : '';
+    top.appendChild(emo); top.appendChild(info); top.appendChild(chk);
     card.appendChild(top);
-    var row=document.createElement('div'); row.className='items-row';
-    m.items.forEach(function(item){
-      var pill=document.createElement('div');
-      pill.className='item-pill'+(state.picks[mi]===item?' picked':'');
-      pill.textContent=item;
-      pill.onclick=function(){ if(state.done[mi]) return; state.picks[mi]=item; render(); };
+    var row = document.createElement('div'); row.className = 'items-row';
+    m.items.forEach(function(item) {
+      var pill = document.createElement('div');
+      pill.className = 'item-pill' + (state.picks[mi] === item ? ' picked' : '');
+      pill.textContent = item;
+      pill.onclick = function() {
+        if (state.done[mi]) return;
+        state.picks[mi] = item;
+        render();
+      };
       row.appendChild(pill);
     });
     card.appendChild(row);
-    if(!state.done[mi]&&state.picks[mi]){
-      var btn=document.createElement('button'); btn.className='complete-btn show';
-      btn.textContent='"'+state.picks[mi]+'" 눈도장 쾅! 👣';
-      (function(idx,lbl){ btn.onclick=function(e){ e.stopPropagation(); state.done[idx]=true; showToast(lbl+' 수집 완료! ✦'); render(); }; })(mi,m.label);
+    if (!state.done[mi] && state.picks[mi]) {
+      var btn = document.createElement('button');
+      btn.className = 'complete-btn show';
+      btn.textContent = '"' + state.picks[mi] + '" 눈도장 쾅! 👣';
+      (function(idx, lbl) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          state.done[idx] = true;
+          showToast(lbl + ' 수집 완료! ✦');
+          render();
+        };
+      })(mi, m.label);
       card.appendChild(btn);
     }
     container.appendChild(card);
@@ -293,59 +315,69 @@ function render() {
 }
 
 function buildStamps(doneCount) {
-  var row=document.getElementById('stamps-row'); row.innerHTML='';
-  MISSIONS.forEach(function(m,mi){
-    var wrap=document.createElement('div'); wrap.className='stamp-item';
-    var stamp=document.createElement('div'); stamp.className='stamp'+(state.done[mi]?' filled':'');
-    if(!state.done[mi]) stamp.textContent=m.emoji;
-    var name=document.createElement('div'); name.className='stamp-name'; name.textContent=m.label;
+  var row = document.getElementById('stamps-row'); row.innerHTML = '';
+  MISSIONS.forEach(function(m, mi) {
+    var wrap = document.createElement('div'); wrap.className = 'stamp-item';
+    var stamp = document.createElement('div'); stamp.className = 'stamp' + (state.done[mi] ? ' filled' : '');
+    if (!state.done[mi]) stamp.textContent = m.emoji;
+    var name = document.createElement('div'); name.className = 'stamp-name'; name.textContent = m.label;
     wrap.appendChild(stamp); wrap.appendChild(name); row.appendChild(wrap);
-    if(mi<2){ var arr=document.createElement('div'); arr.className='stamp-arrow'; arr.textContent='→'; arr.style.marginBottom='14px'; row.appendChild(arr); }
+    if (mi < 2) {
+      var arr = document.createElement('div'); arr.className = 'stamp-arrow';
+      arr.textContent = '→'; arr.style.marginBottom = '14px'; row.appendChild(arr);
+    }
   });
-  document.getElementById('done-count').textContent=doneCount===3?'🎉 3/3 완료!':doneCount+'/3 완료';
+  document.getElementById('done-count').textContent = doneCount === 3 ? '🎉 3/3 완료!' : doneCount + '/3 완료';
 }
 
 function goCard() {
-  if(!state.done.some(Boolean)&&!state.picks.some(Boolean)){ showToast('미션을 하나 이상 완료해요!'); return; }
-  var doneCount=state.done.filter(Boolean).length;
-  var col=document.getElementById('card-collections'); col.innerHTML='';
-  MISSIONS.forEach(function(m,mi){
-    if(!state.picks[mi]) return;
-    var item=document.createElement('div'); item.className='col-item';
-    item.innerHTML='<div class="col-emoji">'+m.emoji+'</div><div class="col-text"><div class="col-mission">'+m.label+'</div><div class="col-pick'+(state.done[mi]?' done':'')+'">'+( state.done[mi]?'✓ ':'')+state.picks[mi]+'</div></div><div class="col-badge '+(state.done[mi]?'done':'try')+'">'+(state.done[mi]?'완료':'발견')+'</div>';
+  if (!state.done.some(Boolean) && !state.picks.some(Boolean)) { showToast('미션을 하나 이상 완료해요!'); return; }
+  var doneCount = state.done.filter(Boolean).length;
+  var col = document.getElementById('card-collections'); col.innerHTML = '';
+  MISSIONS.forEach(function(m, mi) {
+    if (!state.picks[mi]) return;
+    var item = document.createElement('div'); item.className = 'col-item';
+    item.innerHTML = '<div class="col-emoji">' + m.emoji + '</div>'
+      + '<div class="col-text"><div class="col-mission">' + m.label + '</div>'
+      + '<div class="col-pick' + (state.done[mi] ? ' done' : '') + '">' + (state.done[mi] ? '✓ ' : '') + state.picks[mi] + '</div></div>'
+      + '<div class="col-badge ' + (state.done[mi] ? 'done' : 'try') + '">' + (state.done[mi] ? '완료' : '발견') + '</div>';
     col.appendChild(item);
   });
-  var memo=document.getElementById('memo-input').value.trim();
-  var memoWrap=document.getElementById('card-memo-wrap');
-  if(memo){ memoWrap.style.display='block'; document.getElementById('card-memo-text').textContent=memo; }
-  else { memoWrap.style.display='none'; }
+  var memo = document.getElementById('memo-input').value.trim();
+  var memoWrap = document.getElementById('card-memo-wrap');
+  if (memo) { memoWrap.style.display = 'block'; document.getElementById('card-memo-text').textContent = memo; }
+  else { memoWrap.style.display = 'none'; }
   buildStamps(doneCount);
   saveRecord();
   document.getElementById('screen-mission').classList.remove('on');
   document.getElementById('screen-card').classList.add('on');
 }
 
-function share(){
-  var memo=document.getElementById('memo-input').value.trim();
-  var doneCount=state.done.filter(Boolean).length;
-  var lines=['👣 '+today()+' 눈도장 쾅!\n'];
-  MISSIONS.forEach(function(m,mi){ if(state.picks[mi]) lines.push((state.done[mi]?'✓ ':'• ')+m.label+': '+state.picks[mi]); });
-  if(memo) lines.push('\n✍️ '+memo);
-  lines.push('\n'+doneCount+'/3 완료 — 눈도장 쾅! 으로 오늘 산책을 기록했어요 🌻');
-  var text=lines.join('\n');
-  if(navigator.share){ navigator.share({text:text}); }
-  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(function(){ showToast('클립보드에 복사됐어요! ✦'); }); }
+function share() {
+  var memo = document.getElementById('memo-input').value.trim();
+  var doneCount = state.done.filter(Boolean).length;
+  var lines = ['👣 ' + today() + ' 눈도장 쾅!\n'];
+  MISSIONS.forEach(function(m, mi) { if (state.picks[mi]) lines.push((state.done[mi] ? '✓ ' : '• ') + m.label + ': ' + state.picks[mi]); });
+  if (memo) lines.push('\n✍️ ' + memo);
+  lines.push('\n' + doneCount + '/3 완료 — 눈도장 쾅! 으로 오늘 산책을 기록했어요 🌻');
+  var text = lines.join('\n');
+  if (navigator.share) { navigator.share({ text: text }); }
+  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('클립보드에 복사됐어요! ✦'); }); }
   else { showToast('모바일에서 공유해보세요!'); }
 }
 
-function reset(){
-  state={picks:[null,null,null],done:[false,false,false]};
-  document.getElementById('memo-input').value='';
+function reset() {
+  state = { picks: [null, null, null], done: [false, false, false] };
+  document.getElementById('memo-input').value = '';
   goScreen('mission');
   render();
 }
 
-function showToast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2200); }
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
 
 render();
 </script>
