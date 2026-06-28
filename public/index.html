@@ -126,13 +126,13 @@ body { font-family: 'Gaegu', cursive; background: var(--cream); }
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="logo">눈도장 <span>쾅!</span></div>
+    <img src="icons/logo.png" alt="눈도장 쾅!" style="height:38px;object-fit:contain;">
     <div class="date-badge" id="date-badge"></div>
   </div>
 
   <div class="screen on" id="screen-mission">
     <div class="screen-title">오늘의 눈도장</div>
-    <div class="screen-sub">산책하며 발견한 것을 탭해요 🌿</div>
+    <div class="screen-sub">산책하며 발견한 것을 쾅!해요 🌿</div>
     <div class="progress-wrap">
       <div class="progress-label" id="progress-label">0 / 3 완료</div>
       <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
@@ -176,10 +176,43 @@ body { font-family: 'Gaegu', cursive; background: var(--cream); }
 <div class="toast" id="toast"></div>
 
 <script>
+var ALL_ITEMS = {
+  color: [
+    '파란 하늘','하얀 구름','초록 가로수','빨간 벽돌',
+    '노란 간판','주황 가로등','갈색 벤치','회색 담벼락',
+    '베이지 건물','까만 고양이','은빛 자전거','민트색 대문',
+    '투명한 창문','알록달록 우산','분홍빛 노을','하얀 횡단보도'
+  ],
+  life: [
+    '고양이','강아지','비둘기','참새',
+    '나비','잠자리','무당벌레','달팽이',
+    '까치','풀벌레','꿀벌','오리',
+    '들꽃','새싹','다람쥐','잉어'
+  ],
+  moment: [
+    '시원한 바람','기분 좋은 향','예쁜 그림자','따뜻한 햇살',
+    '조용한 골목','맛있는 냄새','펄럭이는 빨래','다정한 웃음',
+    '바스락 발소리','잔잔한 음악','나뭇잎 소리','하얀 뭉게구름',
+    '탁 트인 하늘','길냥이 눈인사','노을 지는 빛','포근한 공기'
+  ]
+};
+
+function getDailyItems(pool, count) {
+  var d = new Date();
+  var seed = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+  var shuffled = pool.slice();
+  for(var i=shuffled.length-1;i>0;i--){
+    seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+    var j = Math.abs(seed) % (i+1);
+    var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+  }
+  return shuffled.slice(0, count);
+}
+
 var MISSIONS = [
-  { key:'color', icon:'icons/color.png', iconAlt:'색깔', label:'색깔 수집', desc:'오늘 눈에 띈 색깔은?', items:['파란 하늘','노란 꽃','빨간 우체통','초록 잎사귀','하얀 구름','보라색'] },
-  { key:'life',  icon:'icons/life.png',  iconAlt:'생명', label:'생명 수집', desc:'만난 생물이 있나요?',  items:['고양이','강아지','비둘기','참새','나비','잠자리'] },
-  { key:'moment',icon:'icons/moment.png',iconAlt:'순간', label:'순간 수집', desc:'오늘 산책의 한 장면',  items:['바람 부는 느낌','좋은 냄새','예쁜 그림자','따뜻한 햇살','조용한 골목','맛있는 냄새'] },
+  { key:'color', icon:'', iconAlt:'색깔', emoji:'🎨', label:'색깔 수집', desc:'오늘 눈에 띈 색깔은?', items: getDailyItems(ALL_ITEMS.color, 6) },
+  { key:'life',  icon:'', iconAlt:'생명', emoji:'🐾', label:'생명 수집', desc:'만난 생물이 있나요?',  items: getDailyItems(ALL_ITEMS.life, 6) },
+  { key:'moment',icon:'', iconAlt:'순간', emoji:'✨', label:'순간 수집', desc:'오늘 산책의 한 장면',  items: getDailyItems(ALL_ITEMS.moment, 6) },
 ];
 var state = { picks:[null,null,null], done:[false,false,false] };
 
@@ -201,7 +234,12 @@ function render() {
     card.className = 'mission-card'+(state.done[mi]?' done':'')+((!state.done[mi]&&state.picks[mi])?' active-pick':'');
     var top = document.createElement('div'); top.className='mc-top';
     var imgW = document.createElement('div'); imgW.className='mc-img';
-    imgW.innerHTML='<img src="'+m.icon+'" alt="'+m.iconAlt+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="ph" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column">손그림<br>이미지</div>';
+    if(m.emoji){
+      imgW.style.cssText='font-size:28px;border:none;background:transparent;';
+      imgW.textContent=m.emoji;
+    } else {
+      imgW.innerHTML='<img src="'+m.icon+'" alt="'+m.iconAlt+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="ph" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column">손그림<br>이미지</div>';
+    }
     var info=document.createElement('div'); info.className='mc-info';
     info.innerHTML='<div class="mc-label">'+m.label+'</div><div class="mc-desc">'+m.desc+'</div>';
     var chk=document.createElement('div'); chk.className='mc-check'; chk.textContent=state.done[mi]?'✓':'';
@@ -219,7 +257,14 @@ function render() {
     if(!state.done[mi]&&state.picks[mi]){
       var btn=document.createElement('button'); btn.className='complete-btn show';
       btn.textContent='"'+state.picks[mi]+'" 눈도장 쾅! 👣';
-      btn.onclick=function(){ state.done[mi]=true; showToast(m.label+' 수집 완료! ✦'); render(); };
+      (function(idx, label){
+        btn.onclick=function(e){
+          e.stopPropagation();
+          state.done[idx]=true;
+          showToast(label+' 수집 완료! ✦');
+          render();
+        };
+      })(mi, m.label);
       card.appendChild(btn);
     }
     container.appendChild(card);
@@ -232,12 +277,17 @@ function buildStamps(doneCount) {
     var wrap=document.createElement('div'); wrap.className='stamp-item';
     var stamp=document.createElement('div'); stamp.className='stamp'+(state.done[mi]?' filled':'');
     if(!state.done[mi]){
-      var imgEl=document.createElement('img'); imgEl.src=m.icon; imgEl.alt=m.iconAlt;
-      imgEl.onerror=function(){ this.style.display='none'; this.nextElementSibling.style.display='flex'; };
-      var ph=document.createElement('div'); ph.className='ph';
-      ph.style.cssText='display:none;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column';
-      ph.textContent='비어있음';
-      stamp.appendChild(imgEl); stamp.appendChild(ph);
+      if(m.emoji){
+        stamp.style.cssText='font-size:20px;';
+        stamp.textContent=m.emoji;
+      } else {
+        var imgEl=document.createElement('img'); imgEl.src=m.icon; imgEl.alt=m.iconAlt;
+        imgEl.onerror=function(){ this.style.display='none'; this.nextElementSibling.style.display='flex'; };
+        var ph=document.createElement('div'); ph.className='ph';
+        ph.style.cssText='display:none;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column';
+        ph.textContent='비어있음';
+        stamp.appendChild(imgEl); stamp.appendChild(ph);
+      }
     }
     var name=document.createElement('div'); name.className='stamp-name'; name.textContent=m.label;
     wrap.appendChild(stamp); wrap.appendChild(name); row.appendChild(wrap);
@@ -253,7 +303,8 @@ function goCard() {
   MISSIONS.forEach(function(m,mi){
     if(!state.picks[mi]) return;
     var item=document.createElement('div'); item.className='col-item';
-    item.innerHTML='<div class="col-img"><img src="'+m.icon+'" alt="'+m.iconAlt+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="ph" style="display:none;width:100%;height:100%;align-items:center;justify-content:center">이미지</div></div><div class="col-text"><div class="col-mission">'+m.label+'</div><div class="col-pick'+(state.done[mi]?' done':'')+'">'+( state.done[mi]?'✓ ':'')+state.picks[mi]+'</div></div><div class="col-badge '+(state.done[mi]?'done':'try')+'">'+(state.done[mi]?'완료':'발견')+'</div>';
+    var colImgHtml = m.emoji ? '<div class="col-img" style="font-size:22px;border:none;background:transparent;">'+m.emoji+'</div>' : '<div class="col-img"><img src="'+m.icon+'" alt="'+m.iconAlt+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="ph" style="display:none;width:100%;height:100%;align-items:center;justify-content:center">이미지</div></div>';
+    item.innerHTML=colImgHtml<div class="col-text"><div class="col-mission">'+m.label+'</div><div class="col-pick'+(state.done[mi]?' done':'')+'">'+( state.done[mi]?'✓ ':'')+state.picks[mi]+'</div></div><div class="col-badge '+(state.done[mi]?'done':'try')+'">'+(state.done[mi]?'완료':'발견')+'</div>';
     col.appendChild(item);
   });
   var memo=document.getElementById('memo-input').value.trim();
