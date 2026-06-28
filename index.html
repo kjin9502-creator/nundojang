@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="눈도장 쾅!">
+<meta name="theme-color" content="#FDF6E3">
+<title>눈도장 쾅!</title>
+<link rel="manifest" href="/manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #FDF6E3; --butter: #FFF3C4; --peach: #FFE5D0; --sage: #E8F0E0;
+  --brown: #8B6F5E; --brown-light: #C4A882; --orange: #E8845A; --green: #7BAF7B;
+  --text: #5C4A3A; --text-light: #A08878;
+}
+body { font-family: 'Gaegu', cursive; background: var(--cream); }
+.app { max-width: 390px; margin: 0 auto; min-height: 100vh; background: var(--cream); display: flex; flex-direction: column; padding-bottom: 24px; }
+
+.topbar { padding: 16px 18px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #DDD0B8; }
+.logo { font-size: 24px; font-weight: 700; color: var(--text); }
+.logo span { color: var(--orange); }
+.date-badge { font-size: 12px; color: var(--brown); background: var(--butter); border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; padding: 3px 12px; border: 1.5px solid #DDD0B8; box-shadow: 2px 2px 0 #DDD0B8; }
+
+.screen { display: none; flex: 1; flex-direction: column; padding: 18px; }
+.screen.on { display: flex; }
+
+.screen-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.screen-sub { font-size: 14px; color: var(--text-light); margin-bottom: 16px; }
+
+.progress-wrap { margin-bottom: 18px; }
+.progress-label { font-size: 14px; color: var(--text-light); margin-bottom: 6px; }
+.progress-bar { height: 7px; background: #EDE0CC; border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--orange); border-radius: 99px; transition: width .5s cubic-bezier(.34,1.56,.64,1); }
+
+.mission-card { background: #fff; border-radius: 20px 6px 18px 6px/6px 18px 6px 20px; border: 2px solid #E0D4C0; padding: 16px; margin-bottom: 12px; box-shadow: 3px 4px 0 #E0D4C0; }
+.mission-card.done { background: var(--sage); border-color: #B8D4B8; box-shadow: 3px 4px 0 #B8D4B8; }
+.mission-card.active-pick { background: var(--peach); border-color: #E8C4A8; box-shadow: 3px 4px 0 #E8C4A8; }
+
+.mc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.mc-img { width: 50px; height: 50px; border-radius: 16px 4px 14px 4px/4px 14px 4px 16px; border: 1.5px dashed #DDD0B8; background: var(--butter); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.mc-img img { width: 100%; height: 100%; object-fit: cover; }
+.mc-img .ph { font-size: 9px; color: var(--brown-light); text-align: center; line-height: 1.3; }
+.mission-card.done .mc-img { background: #D4EAD4; border-color: #B8D4B8; }
+.mission-card.active-pick .mc-img { background: #FFD8C0; border-color: #E8C4A8; }
+.mc-info { flex: 1; }
+.mc-label { font-size: 18px; font-weight: 700; color: var(--text); }
+.mc-desc { font-size: 13px; color: var(--text-light); margin-top: 1px; }
+.mission-card.done .mc-label { color: #4A7A4A; }
+.mc-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #E0D4C0; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.mission-card.done .mc-check { background: var(--green); border-color: var(--green); color: white; }
+
+.items-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.item-pill { padding: 5px 13px; border-radius: 255px 8px 200px 8px/8px 200px 8px 255px; border: 1.5px solid #DDD0B8; background: var(--cream); font-size: 13px; color: var(--text); cursor: pointer; font-family: 'Gaegu', cursive; transition: all .1s; }
+.item-pill:active { transform: scale(.91); }
+.item-pill.picked { background: var(--orange); border-color: var(--orange); color: white; box-shadow: 2px 2px 0 #C86A3A; }
+.mission-card.done .item-pill.picked { background: var(--green); border-color: var(--green); box-shadow: 2px 2px 0 #4A7A4A; }
+
+.complete-btn { margin-top: 11px; width: 100%; padding: 9px; border-radius: 8px 200px 8px 200px/200px 8px 200px 8px; background: var(--orange); border: none; color: white; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Gaegu', cursive; box-shadow: 3px 3px 0 #C86A3A; display: none; }
+.complete-btn.show { display: block; }
+
+.memo-section { margin-top: 16px; margin-bottom: 4px; }
+.memo-label { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.memo-input { width: 100%; padding: 12px 16px; border-radius: 8px 200px 8px 200px/200px 8px 200px 8px; border: 2px solid #DDD0B8; background: #fff; font-size: 15px; font-family: 'Gaegu', cursive; color: var(--text); outline: none; box-shadow: 3px 3px 0 #E0D4C0; }
+.memo-input:focus { border-color: var(--orange); }
+.memo-input::placeholder { color: var(--brown-light); }
+
+.spacer { flex: 1; min-height: 16px; }
+.finish-btn { padding: 14px; border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; background: var(--butter); border: 2px solid #DDD0B8; color: var(--text-light); font-size: 17px; font-weight: 700; cursor: pointer; font-family: 'Gaegu', cursive; box-shadow: 3px 4px 0 #DDD0B8; }
+.finish-btn.ready { background: var(--text); border-color: var(--text); color: var(--cream); box-shadow: 3px 4px 0 #3A2A1A; }
+
+.card-screen { align-items: stretch; }
+.card { background: #fff; border-radius: 16px 4px 20px 4px/4px 20px 4px 16px; border: 2px solid #E0D4C0; padding: 22px 20px; box-shadow: 5px 6px 0 #E0D4C0; margin-bottom: 16px; position: relative; }
+.corner { position: absolute; font-size: 13px; color: #DDD0B8; }
+.corner.tl { top:8px; left:10px; } .corner.tr { top:8px; right:10px; }
+.corner.bl { bottom:8px; left:10px; } .corner.br { bottom:8px; right:10px; }
+
+.card-date { font-size: 13px; color: var(--text-light); margin-bottom: 4px; }
+.card-title { font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 16px; line-height: 1.2; }
+.card-title span { color: var(--orange); }
+
+.card-collections { display: flex; flex-direction: column; gap: 11px; margin-bottom: 16px; }
+.col-item { display: flex; align-items: center; gap: 12px; }
+.col-img { width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px 4px 12px 4px/4px 12px 4px 12px; border: 1.5px dashed #DDD0B8; background: var(--butter); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.col-img img { width: 100%; height: 100%; object-fit: cover; }
+.col-img .ph { font-size: 8px; color: var(--brown-light); text-align: center; line-height: 1.3; }
+.col-text { flex: 1; }
+.col-mission { font-size: 12px; color: var(--text-light); }
+.col-pick { font-size: 15px; font-weight: 700; color: var(--text); }
+.col-pick.done { color: var(--green); }
+.col-badge { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
+.col-badge.done { background: var(--sage); color: var(--green); }
+.col-badge.try { background: var(--peach); color: var(--orange); }
+
+.dashed { border: none; border-top: 2px dashed #E0D4C0; margin: 14px 0; }
+
+.card-memo-wrap { margin-bottom: 14px; }
+.card-memo-label { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
+.card-memo-text { font-size: 16px; font-weight: 700; color: var(--text); background: var(--butter); border-radius: 8px 200px 8px 200px/200px 8px 200px 8px; padding: 9px 16px; border: 1.5px solid #DDD0B8; display: inline-block; max-width: 100%; word-break: break-all; }
+
+.stamps-wrap { margin-bottom: 14px; }
+.stamps-label { font-size: 12px; color: var(--text-light); margin-bottom: 8px; }
+.stamps-row { display: flex; gap: 10px; align-items: center; }
+.stamp-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.stamp { width: 52px; height: 52px; border-radius: 50%; border: 2px dashed #DDD0B8; background: #F5EFE0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+.stamp.filled { border-style: solid; border-color: var(--orange); background: var(--peach); box-shadow: 0 0 0 3px #FFE5D0; }
+.stamp.filled::after { content: '✦'; position: absolute; font-size: 22px; color: var(--orange); }
+.stamp img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.stamp .ph { font-size: 8px; color: #DDD0B8; text-align: center; line-height: 1.3; }
+.stamp-name { font-size: 11px; color: var(--text-light); }
+.stamp-arrow { font-size: 18px; color: #DDD0B8; margin-bottom: 14px; }
+
+.card-footer { display: flex; justify-content: space-between; align-items: center; }
+.watermark { font-size: 14px; color: var(--brown-light); font-weight: 700; }
+.done-count { font-size: 13px; color: var(--green); font-weight: 700; }
+
+.btn-main { width: 100%; padding: 14px; border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; background: var(--text); border: none; color: var(--cream); font-size: 17px; font-weight: 700; cursor: pointer; font-family: 'Gaegu', cursive; box-shadow: 3px 4px 0 #3A2A1A; margin-bottom: 10px; }
+.btn-ghost { width: 100%; padding: 12px; border-radius: 15px 255px 15px 225px/225px 15px 255px 15px; background: var(--cream); border: 2px solid #DDD0B8; color: var(--text-light); font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Gaegu', cursive; box-shadow: 3px 4px 0 #DDD0B8; }
+
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--text); color: var(--cream); border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; padding: 9px 20px; font-size: 14px; font-family: 'Gaegu', cursive; opacity: 0; transition: all .25s; pointer-events: none; white-space: nowrap; z-index: 99; box-shadow: 3px 3px 0 #3A2A1A; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo">눈도장 <span>쾅!</span></div>
+    <div class="date-badge" id="date-badge"></div>
+  </div>
+
+  <div class="screen on" id="screen-mission">
+    <div class="screen-title">오늘의 눈도장</div>
+    <div class="screen-sub">산책하며 발견한 것을 탭해요 🌿</div>
+    <div class="progress-wrap">
+      <div class="progress-label" id="progress-label">0 / 3 완료</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div id="missions-container"></div>
+    <div class="memo-section">
+      <div class="memo-label">오늘의 한 줄 ✍️</div>
+      <input class="memo-input" id="memo-input" type="text" placeholder="오늘 산책에서 기억하고 싶은 순간은?" maxlength="40">
+    </div>
+    <div class="spacer"></div>
+    <button class="finish-btn" id="finish-btn" onclick="goCard()">오늘의 카드 만들기 →</button>
+  </div>
+
+  <div class="screen card-screen" id="screen-card">
+    <div class="card">
+      <span class="corner tl">✦</span><span class="corner tr">✦</span>
+      <span class="corner bl">✦</span><span class="corner br">✦</span>
+      <div class="card-date" id="card-date"></div>
+      <div class="card-title">오늘의 <span>눈도장</span></div>
+      <div class="card-collections" id="card-collections"></div>
+      <hr class="dashed">
+      <div class="card-memo-wrap" id="card-memo-wrap" style="display:none">
+        <div class="card-memo-label">오늘의 한 줄 ✍️</div>
+        <div class="card-memo-text" id="card-memo-text"></div>
+        <hr class="dashed" style="margin-top:14px">
+      </div>
+      <div class="stamps-wrap">
+        <div class="stamps-label">완성도 도장</div>
+        <div class="stamps-row" id="stamps-row"></div>
+      </div>
+      <hr class="dashed">
+      <div class="card-footer">
+        <div class="done-count" id="done-count"></div>
+        <div class="watermark">눈도장 쾅! 🌻</div>
+      </div>
+    </div>
+    <button class="btn-main" onclick="share()">카드 공유하기 ✉️</button>
+    <button class="btn-ghost" onclick="reset()">내일도 산책하기 🚶</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var MISSIONS = [
+  { key:'color', icon:'icons/color.png', iconAlt:'색깔', label:'색깔 수집', desc:'오늘 눈에 띈 색깔은?', items:['파란 하늘','노란 꽃','빨간 우체통','초록 잎사귀','하얀 구름','보라색'] },
+  { key:'life',  icon:'icons/life.png',  iconAlt:'생명', label:'생명 수집', desc:'만난 생물이 있나요?',  items:['고양이','강아지','비둘기','참새','나비','잠자리'] },
+  { key:'moment',icon:'icons/moment.png',iconAlt:'순간', label:'순간 수집', desc:'오늘 산책의 한 장면',  items:['바람 부는 느낌','좋은 냄새','예쁜 그림자','따뜻한 햇살','조용한 골목','맛있는 냄새'] },
+];
+var state = { picks:[null,null,null], done:[false,false,false] };
+
+function today() { var d=new Date(); return (d.getMonth()+1)+'월 '+d.getDate()+'일'; }
+document.getElementById('date-badge').textContent = today();
+document.getElementById('card-date').textContent = today() + ' 산책 기록';
+
+function render() {
+  var container = document.getElementById('missions-container');
+  container.innerHTML = '';
+  var doneCount = state.done.filter(Boolean).length;
+  document.getElementById('progress-label').textContent = doneCount + ' / 3 완료';
+  document.getElementById('progress-fill').style.width = (doneCount/3*100)+'%';
+  var fb = document.getElementById('finish-btn');
+  fb.className = 'finish-btn' + (doneCount>0||state.picks.some(Boolean)?' ready':'');
+
+  MISSIONS.forEach(function(m,mi) {
+    var card = document.createElement('div');
+    card.className = 'mission-card'+(state.done[mi]?' done':'')+((!state.done[mi]&&state.picks[mi])?' active-pick':'');
+    var top = document.createElement('div'); top.className='mc-top';
+    var imgW = document.createElement('div'); imgW.className='mc-img';
+    imgW.innerHTML='<img src="'+m.icon+'" alt="'+m.iconAlt+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="ph" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column">손그림<br>이미지</div>';
+    var info=document.createElement('div'); info.className='mc-info';
+    info.innerHTML='<div class="mc-label">'+m.label+'</div><div class="mc-desc">'+m.desc+'</div>';
+    var chk=document.createElement('div'); chk.className='mc-check'; chk.textContent=state.done[mi]?'✓':'';
+    top.appendChild(imgW); top.appendChild(info); top.appendChild(chk);
+    card.appendChild(top);
+    var row=document.createElement('div'); row.className='items-row';
+    m.items.forEach(function(item) {
+      var pill=document.createElement('div');
+      pill.className='item-pill'+(state.picks[mi]===item?' picked':'');
+      pill.textContent=item;
+      pill.onclick=function(){ if(state.done[mi]) return; state.picks[mi]=item; render(); };
+      row.appendChild(pill);
+    });
+    card.appendChild(row);
+    if(!state.done[mi]&&state.picks[mi]){
+      var btn=document.createElement('button'); btn.className='complete-btn show';
+      btn.textContent='"'+state.picks[mi]+'" 눈도장 쾅! 👣';
+      btn.onclick=function(){ state.done[mi]=true; showToast(m.label+' 수집 완료! ✦'); render(); };
+      card.appendChild(btn);
+    }
+    container.appendChild(card);
+  });
+}
+
+function buildStamps(doneCount) {
+  var row=document.getElementById('stamps-row'); row.innerHTML='';
+  MISSIONS.forEach(function(m,mi){
+    var wrap=document.createElement('div'); wrap.className='stamp-item';
+    var stamp=document.createElement('div'); stamp.className='stamp'+(state.done[mi]?' filled':'');
+    if(!state.done[mi]){
+      var imgEl=document.createElement('img'); imgEl.src=m.icon; imgEl.alt=m.iconAlt;
+      imgEl.onerror=function(){ this.style.display='none'; this.nextElementSibling.style.display='flex'; };
+      var ph=document.createElement('div'); ph.className='ph';
+      ph.style.cssText='display:none;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column';
+      ph.textContent='비어있음';
+      stamp.appendChild(imgEl); stamp.appendChild(ph);
+    }
+    var name=document.createElement('div'); name.className='stamp-name'; name.textContent=m.label;
+    wrap.appendChild(stamp); wrap.appendChild(name); row.appendChild(wrap);
+    if(mi<2){ var arr=document.createElement('div'); arr.className='stamp-arrow'; arr.textContent='→'; arr.style.marginBottom='14px'; row.appendChild(arr); }
+  });
+  document.getElementById('done-count').textContent = doneCount===3?'🎉 3/3 완료!':doneCount+'/3 완료';
+}
+
+function goCard() {
+  if(!state.done.some(Boolean)&&!state.picks.some(Boolean)){ showToast('미션을 하나 이상 완료해요!'); return; }
+  var doneCount=state.done.filter(Boolean).length;
+  var col=document.getElementById('card-collections'); col.innerHTML='';
+  MISSIONS.forEach(function(m,mi){
+    if(!state.picks[mi]) return;
+    var item=document.createElement('div'); item.className='col-item';
+    item.innerHTML='<div class="col-img"><img src="'+m.icon+'" alt="'+m.iconAlt+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="ph" style="display:none;width:100%;height:100%;align-items:center;justify-content:center">이미지</div></div><div class="col-text"><div class="col-mission">'+m.label+'</div><div class="col-pick'+(state.done[mi]?' done':'')+'">'+( state.done[mi]?'✓ ':'')+state.picks[mi]+'</div></div><div class="col-badge '+(state.done[mi]?'done':'try')+'">'+(state.done[mi]?'완료':'발견')+'</div>';
+    col.appendChild(item);
+  });
+  var memo=document.getElementById('memo-input').value.trim();
+  var memoWrap=document.getElementById('card-memo-wrap');
+  if(memo){ memoWrap.style.display='block'; document.getElementById('card-memo-text').textContent=memo; }
+  else { memoWrap.style.display='none'; }
+  buildStamps(doneCount);
+  document.getElementById('screen-mission').classList.remove('on');
+  document.getElementById('screen-card').classList.add('on');
+}
+
+function share(){
+  var memo=document.getElementById('memo-input').value.trim();
+  var doneCount=state.done.filter(Boolean).length;
+  var lines=['👣 '+today()+' 눈도장 쾅!\n'];
+  MISSIONS.forEach(function(m,mi){ if(state.picks[mi]) lines.push((state.done[mi]?'✓ ':'• ')+m.label+': '+state.picks[mi]); });
+  if(memo) lines.push('\n✍️ '+memo);
+  lines.push('\n'+doneCount+'/3 완료 — 눈도장 쾅! 으로 오늘 산책을 기록했어요 🌻');
+  var text=lines.join('\n');
+  if(navigator.share){ navigator.share({text:text}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(function(){ showToast('클립보드에 복사됐어요! ✦'); }); }
+  else { showToast('모바일에서 공유해보세요!'); }
+}
+
+function reset(){
+  state={picks:[null,null,null],done:[false,false,false]};
+  document.getElementById('memo-input').value='';
+  document.getElementById('screen-card').classList.remove('on');
+  document.getElementById('screen-mission').classList.add('on');
+  render();
+}
+
+function showToast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2200); }
+
+render();
+</script>
+</body>
+</html>
