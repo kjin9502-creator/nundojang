@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="눈도장 쾅!">
+  <meta name="theme-color" content="#FFFDF7">
+  <title>눈도장 쾅!</title>
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; background: #FFFDF7; font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; color: #2C2C2A; overscroll-behavior: none; }
+
+    /* ── 앱 쉘 ── */
+    #app { display: flex; flex-direction: column; height: 100%; max-width: 430px; margin: 0 auto; position: relative; }
+
+    /* ── 화면 전환 ── */
+    .screen { display: none; flex-direction: column; flex: 1; overflow-y: auto; }
+    .screen.active { display: flex; }
+
+    /* ── 탑바 ── */
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 8px; background: #FFFDF7; position: sticky; top: 0; z-index: 10; border-bottom: 0.5px solid #EDE8DF; }
+    .topbar-title { font-size: 17px; font-weight: 600; color: #2C2C2A; }
+    .topbar-title span { color: #D85A30; }
+    .topbar-badge { font-size: 11px; background: #FAEEDA; color: #854F0B; border-radius: 8px; padding: 3px 9px; font-weight: 500; }
+
+    /* ── 홈 화면 ── */
+    .home-body { padding: 14px 16px; flex: 1; }
+
+    .scrapbook-card { background: #FFF8EE; border-radius: 18px; border: 1.5px dashed #EF9F27; padding: 14px; margin-bottom: 16px; min-height: 130px; position: relative; overflow: hidden; cursor: pointer; }
+    .sb-title { font-size: 11px; font-weight: 600; color: #854F0B; margin-bottom: 10px; letter-spacing: .04em; }
+    .sb-canvas { position: relative; height: 80px; }
+    .sb-sticker { position: absolute; font-size: 0; }
+    .sb-sticker img { width: 60px; height: 60px; object-fit: contain; }
+    .sb-empty { font-size: 12px; color: #C8A96A; padding-top: 20px; }
+    .sb-count { position: absolute; bottom: 0; right: 0; font-size: 10px; color: #854F0B; background: #FAEEDA; border-radius: 8px; padding: 2px 8px; }
+
+    .section-title { font-size: 12px; font-weight: 600; color: #5F5E5A; margin-bottom: 10px; letter-spacing: .04em; }
+
+    .mission-row { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 2px; }
+    .mission-row::-webkit-scrollbar { display: none; }
+    .mission-chip { flex-shrink: 0; background: #fff; border: 1px solid #D3D1C7; border-radius: 14px; padding: 10px 8px; text-align: center; min-width: 72px; cursor: pointer; transition: all .15s; }
+    .mission-chip.done { background: #EAF3DE; border-color: #97C459; }
+    .mission-chip.active-now { border-color: #D85A30; background: #FFF3EE; }
+    .mission-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+    .mission-label { font-size: 10px; color: #5F5E5A; line-height: 1.3; }
+    .mission-chip.done .mission-label { color: #3B6D11; }
+
+    .feed-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid #EDE8DF; }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-av { width: 28px; height: 28px; border-radius: 50%; background: #FBEAF0; border: 1px solid #ED93B1; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .feed-text { font-size: 12px; color: #444441; flex: 1; line-height: 1.4; }
+    .feed-text b { color: #2C2C2A; font-weight: 600; }
+    .feed-time { font-size: 10px; color: #B4B2A9; }
+
+    /* ── 카메라 / 변환 화면 ── */
+    .camera-body { padding: 16px; flex: 1; }
+
+    .upload-zone { border: 1.5px dashed #D3D1C7; border-radius: 16px; padding: 28px 16px; text-align: center; cursor: pointer; background: #F9F7F2; margin-bottom: 14px; transition: all .15s; }
+    .upload-zone:hover { border-color: #D85A30; background: #FFF8EE; }
+    .uz-icon { font-size: 36px; margin-bottom: 8px; }
+    .uz-text { font-size: 14px; color: #5F5E5A; font-weight: 500; }
+    .uz-sub { font-size: 11px; color: #B4B2A9; margin-top: 4px; }
+
+    .preview-wrap { position: relative; margin-bottom: 14px; }
+    .preview-wrap canvas { width: 100%; border-radius: 14px; display: block; border: 0.5px solid #EDE8DF; }
+    .preview-wrap canvas.chk { background: repeating-conic-gradient(#ddd 0% 25%, #fff 0% 50%) 0 0/10px 10px; }
+
+    .filter-label { font-size: 11px; font-weight: 600; color: #5F5E5A; margin-bottom: 8px; letter-spacing: .04em; }
+    .preset-row { display: flex; gap: 6px; margin-bottom: 12px; }
+    .preset-btn { flex: 1; padding: 8px 4px; border-radius: 10px; border: 1px solid #D3D1C7; background: #fff; font-size: 11px; color: #5F5E5A; cursor: pointer; text-align: center; transition: all .1s; }
+    .preset-btn.on { border-color: #D85A30; background: #D85A30; color: white; font-weight: 600; }
+
+    .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .sl-label { font-size: 11px; color: #888780; width: 46px; flex-shrink: 0; }
+    .slider-row input[type=range] { flex: 1; accent-color: #D85A30; }
+    .sl-val { font-size: 11px; font-weight: 500; width: 28px; text-align: right; }
+
+    .action-row { display: flex; gap: 8px; margin-top: 14px; }
+    .btn-orange { flex: 1; padding: 13px; border-radius: 12px; background: #D85A30; border: none; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+    .btn-orange:disabled { opacity: .4; cursor: default; }
+    .btn-orange:active:not(:disabled) { opacity: .8; }
+    .btn-gray { padding: 13px 16px; border-radius: 12px; background: #F1EFE8; border: none; font-size: 14px; color: #5F5E5A; cursor: pointer; }
+    .btn-gray:disabled { opacity: .4; }
+
+    .status-bar { font-size: 11px; color: #B4B2A9; text-align: center; padding: 6px 0; min-height: 24px; }
+    .status-bar.go { color: #D85A30; }
+    .status-bar.ok { color: #3B6D11; }
+
+    /* ── 스크랩북 화면 ── */
+    .scrapbook-body { padding: 12px 14px; flex: 1; }
+    #scrapbook-canvas-wrap { position: relative; background: #FEF9F0; border: 1.5px dashed #EF9F27; border-radius: 16px; overflow: hidden; min-height: 420px; margin-bottom: 12px; }
+    #scrapbook-canvas-wrap .rule { position: absolute; left: 0; right: 0; border-top: 1px solid #F5E8CC; pointer-events: none; }
+    .placed-sticker { position: absolute; cursor: grab; user-select: none; touch-action: none; }
+    .placed-sticker img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+    .placed-sticker.sel { outline: 2px solid #EF9F27; outline-offset: 2px; }
+    .del-btn { position: absolute; top: -9px; right: -9px; width: 20px; height: 20px; background: #D85A30; color: white; border-radius: 50%; border: none; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 20; }
+    .placed-sticker.sel .del-btn { display: flex; }
+    .resize-h { position: absolute; bottom: -8px; right: -8px; width: 16px; height: 16px; background: #EF9F27; border-radius: 50%; border: 2px solid #fff; cursor: se-resize; display: none; z-index: 20; }
+    .placed-sticker.sel .resize-h { display: block; }
+
+    .sticker-tray-wrap { }
+    .tray-title { font-size: 11px; font-weight: 600; color: #854F0B; margin-bottom: 6px; letter-spacing: .04em; }
+    .sticker-tray { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+    .sticker-tray::-webkit-scrollbar { display: none; }
+    .tray-item { flex-shrink: 0; width: 52px; height: 52px; background: #fff; border: 1px solid #D3D1C7; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .1s; overflow: hidden; }
+    .tray-item:active { transform: scale(.92); }
+    .tray-item img { width: 100%; height: 100%; object-fit: contain; }
+    .tray-empty { font-size: 11px; color: #B4B2A9; padding: 14px; text-align: center; width: 100%; }
+
+    /* ── 하단 네비 ── */
+    .bottom-nav { display: flex; background: #FFFDF7; border-top: 0.5px solid #EDE8DF; padding: 8px 0 max(env(safe-area-inset-bottom), 6px); flex-shrink: 0; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; color: #B4B2A9; cursor: pointer; padding: 2px 0; }
+    .nav-item.active { color: #D85A30; }
+    .nav-icon { font-size: 20px; }
+    .cam-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .cam-btn { width: 44px; height: 44px; border-radius: 50%; background: #D85A30; display: flex; align-items: center; justify-content: center; margin-top: -16px; border: 3px solid #FFFDF7; color: white; font-size: 18px; cursor: pointer; }
+
+    /* ── 토스트 ── */
+    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: #2C2C2A; color: white; border-radius: 10px; padding: 9px 18px; font-size: 13px; opacity: 0; transition: all .25s; pointer-events: none; white-space: nowrap; z-index: 100; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── 로딩 오버레이 ── */
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,253,247,.85); z-index: 50; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+    .loading-overlay.show { display: flex; }
+    .spinner { width: 36px; height: 36px; border: 3px solid #EDE8DF; border-top-color: #D85A30; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 13px; color: #854F0B; font-weight: 500; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ 홈 화면 ══ -->
+  <div class="screen active" id="screen-home">
+    <div class="topbar">
+      <div class="topbar-title">눈도장 <span>쾅!</span> ☀️</div>
+      <div class="topbar-badge" id="sticker-count">스티커 0개</div>
+    </div>
+    <div class="home-body">
+
+      <div class="scrapbook-card" onclick="goScreen('scrapbook')">
+        <div class="sb-title">나의 여름 스크랩북</div>
+        <div class="sb-canvas" id="home-sb-preview">
+          <div class="sb-empty">아직 스티커가 없어요 — 사진을 찍어봐요!</div>
+        </div>
+        <div class="sb-count" id="home-sb-count"></div>
+      </div>
+
+      <div class="section-title">오늘의 눈도장 미션</div>
+      <div class="mission-row" id="mission-row"></div>
+
+      <div class="section-title">친구 소식</div>
+      <div id="feed">
+        <div class="feed-item">
+          <div class="feed-av">🍧</div>
+          <div class="feed-text"><b>민지</b>가 새 눈도장을 찍었어요</div>
+          <div class="feed-time">2분 전</div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-av">🌸</div>
+          <div class="feed-text"><b>지수</b>가 발도장을 남겼어요 🐾</div>
+          <div class="feed-time">1시간 전</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 카메라 / 변환 화면 ══ -->
+  <div class="screen" id="screen-camera">
+    <div class="topbar">
+      <div class="topbar-title">눈도장 <span>찍기</span></div>
+      <div class="topbar-badge" id="mission-badge">오늘 0/3</div>
+    </div>
+    <div class="camera-body">
+
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none">
+        <div class="uz-icon">📷</div>
+        <div class="uz-text">사진 찍거나 불러오기</div>
+        <div class="uz-sub">탭하면 카메라가 열려요</div>
+      </div>
+
+      <div class="preview-wrap" id="preview-wrap" style="display:none">
+        <canvas id="canvas-filtered" class="chk"></canvas>
+      </div>
+
+      <div id="filter-controls" style="display:none">
+        <div class="filter-label">필터</div>
+        <div class="preset-row">
+          <div class="preset-btn on" data-p="5s">iPhone 5s</div>
+          <div class="preset-btn" data-p="film">필름</div>
+          <div class="preset-btn" data-p="fade">페이드</div>
+          <div class="preset-btn" data-p="vivid">비비드</div>
+        </div>
+        <div class="slider-row">
+          <span class="sl-label">채도</span>
+          <input type="range" id="f-sat" min="60" max="160" value="82" step="1">
+          <span class="sl-val" id="f-sv">82</span>
+        </div>
+        <div class="slider-row">
+          <span class="sl-label">대비</span>
+          <input type="range" id="f-con" min="80" max="160" value="118" step="1">
+          <span class="sl-val" id="f-cv">118</span>
+        </div>
+        <div class="slider-row">
+          <span class="sl-label">따뜻함</span>
+          <input type="range" id="f-warm" min="0" max="40" value="14" step="1">
+          <span class="sl-val" id="f-wv">14</span>
+        </div>
+        <div class="slider-row">
+          <span class="sl-label">그레인</span>
+          <input type="range" id="f-grain" min="0" max="60" value="22" step="1">
+          <span class="sl-val" id="f-gv">22</span>
+        </div>
+        <div class="slider-row">
+          <span class="sl-label">테두리</span>
+          <input type="range" id="f-bw" min="4" max="24" value="12" step="1">
+          <span class="sl-val" id="f-bwv">12</span>
+        </div>
+      </div>
+
+      <div class="status-bar" id="cam-status">사진을 찍거나 불러오면 자동으로 변환돼요</div>
+
+      <div class="action-row">
+        <button class="btn-orange" id="btn-convert" disabled onclick="convertSticker()">배경 제거 + 스티커 변환</button>
+        <button class="btn-gray" id="btn-add" disabled onclick="addToScrapbook()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 스크랩북 화면 ══ -->
+  <div class="screen" id="screen-scrapbook">
+    <div class="topbar">
+      <div class="topbar-title">나의 <span>스크랩북</span></div>
+      <div class="topbar-badge" onclick="exportScrapbook()" style="cursor:pointer">공유 ↗</div>
+    </div>
+    <div class="scrapbook-body">
+      <div id="scrapbook-canvas-wrap">
+        <div class="rule" style="top:60px"></div>
+        <div class="rule" style="top:120px"></div>
+        <div class="rule" style="top:180px"></div>
+        <div class="rule" style="top:240px"></div>
+        <div class="rule" style="top:300px"></div>
+        <div class="rule" style="top:360px"></div>
+      </div>
+      <div class="sticker-tray-wrap">
+        <div class="tray-title">수집한 눈도장 — 탭해서 캔버스에 올리기</div>
+        <div class="sticker-tray" id="sticker-tray">
+          <div class="tray-empty">아직 스티커가 없어요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 하단 네비 ══ -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="goScreen('home')">
+      <span class="nav-icon">🏠</span><span>홈</span>
+    </div>
+    <div class="nav-item" onclick="goScreen('scrapbook')">
+      <span class="nav-icon">📖</span><span>스크랩북</span>
+    </div>
+    <div class="nav-item cam-wrap" onclick="goScreen('camera')">
+      <div class="cam-btn">📷</div>
+      <span style="margin-top:18px;font-size:9px;color:#B4B2A9">찍기</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">👯</span><span>친구</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">🔄</span><span>교환</span>
+    </div>
+  </nav>
+
+</div>
+
+<!-- 로딩 -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">배경 제거 중...</div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── 상태 ── */
+var state = {
+  stickers: JSON.parse(localStorage.getItem('nd_stickers') || '[]'),
+  canvas: JSON.parse(localStorage.getItem('nd_canvas') || '[]'),
+  missions: [
+    { icon:'🔵', label:'파란 것 찾기', done: false },
+    { icon:'🌻', label:'노란 것 찾기', done: false },
+    { icon:'🐱', label:'고양이 만나기', done: false },
+  ],
+  origImg: null,
+  filteredCanvas: null,
+  stickerUrl: null,
+};
+
+var PRESETS = {
+  '5s':   [82,118,14,22,12],
+  'film': [72,108,22,40,12],
+  'fade': [65,95,8,14,12],
+  'vivid':[148,130,4,8,12],
+};
+
+/* ── 화면 전환 ── */
+function goScreen(name) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('screen-'+name).classList.add('active');
+  var idx = {home:0,scrapbook:1,camera:2}[name];
+  if (idx !== undefined) document.querySelectorAll('.nav-item')[idx === 2 ? 2 : idx].classList.add('active');
+  if (name === 'home') renderHome();
+  if (name === 'scrapbook') renderScrapbook();
+}
+
+/* ── 홈 ── */
+function renderHome() {
+  var row = document.getElementById('mission-row');
+  row.innerHTML = '';
+  state.missions.forEach(function(m, i) {
+    var div = document.createElement('div');
+    div.className = 'mission-chip' + (m.done ? ' done' : '');
+    div.innerHTML = '<span class="mission-icon">'+m.icon+'</span><span class="mission-label">'+m.label+'</span>';
+    div.onclick = function(){ goScreen('camera'); };
+    row.appendChild(div);
+  });
+
+  var cnt = state.stickers.length;
+  document.getElementById('sticker-count').textContent = '스티커 '+cnt+'개';
+  var done = state.missions.filter(function(m){ return m.done; }).length;
+  document.getElementById('mission-badge') && (document.getElementById('mission-badge').textContent = '오늘 '+done+'/3');
+
+  var preview = document.getElementById('home-sb-preview');
+  if (state.stickers.length === 0) {
+    preview.innerHTML = '<div class="sb-empty">아직 스티커가 없어요 — 사진을 찍어봐요!</div>';
+  } else {
+    preview.innerHTML = '';
+    state.stickers.slice(-5).forEach(function(url, i) {
+      var el = document.createElement('div');
+      el.className = 'sb-sticker';
+      el.style.cssText = 'left:'+(i*36+4)+'px;top:'+(i%2*10)+'px;transform:rotate('+(Math.random()*14-7).toFixed(1)+'deg)';
+      var img = document.createElement('img');
+      img.src = url; img.style.cssText = 'width:56px;height:56px;object-fit:contain';
+      el.appendChild(img);
+      preview.appendChild(el);
+    });
+    document.getElementById('home-sb-count').textContent = '스티커 '+cnt+'개';
+  }
+}
+
+/* ── 카메라 / 필터 ── */
+document.getElementById('file-input').addEventListener('change', function(e) {
+  var file = e.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var img = new Image();
+    img.onload = function() {
+      state.origImg = img;
+      document.getElementById('upload-zone').style.display = 'none';
+      document.getElementById('preview-wrap').style.display = 'block';
+      document.getElementById('filter-controls').style.display = 'block';
+      document.getElementById('btn-convert').disabled = false;
+      applyFilter();
+      setCamStatus('필터 적용됨 — 변환 버튼을 눌러요', 'ok');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+['f-sat','f-con','f-warm','f-grain','f-bw'].forEach(function(id, i) {
+  var vid = ['f-sv','f-cv','f-wv','f-gv','f-bwv'][i];
+  document.getElementById(id).addEventListener('input', function() {
+    document.getElementById(vid).textContent = this.value;
+    if (state.origImg) applyFilter();
+  });
+});
+
+document.querySelectorAll('.preset-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.preset-btn').forEach(function(b){ b.classList.remove('on'); });
+    this.classList.add('on');
+    var p = PRESETS[this.dataset.p];
+    ['f-sat','f-con','f-warm','f-grain','f-bw'].forEach(function(id,i){
+      document.getElementById(id).value = p[i];
+      document.getElementById(['f-sv','f-cv','f-wv','f-gv','f-bwv'][i]).textContent = p[i];
+    });
+    if (state.origImg) applyFilter();
+  });
+});
+
+function getFP() {
+  return {
+    sat:   parseInt(document.getElementById('f-sat').value),
+    con:   parseInt(document.getElementById('f-con').value),
+    warm:  parseInt(document.getElementById('f-warm').value),
+    grain: parseInt(document.getElementById('f-grain').value),
+    bw:    parseInt(document.getElementById('f-bw').value),
+  };
+}
+
+function applyFilter() {
+  if (!state.origImg) return;
+  var p = getFP();
+  var c = document.getElementById('canvas-filtered');
+  var sz = 320;
+  var r = Math.min(sz/state.origImg.width, sz/state.origImg.height);
+  c.width = Math.round(state.origImg.width*r);
+  c.height = Math.round(state.origImg.height*r);
+  var ctx = c.getContext('2d');
+  ctx.filter = 'saturate('+p.sat+'%) contrast('+p.con+'%) brightness(96%) sepia('+Math.round(p.warm*.5)+'%)';
+  ctx.drawImage(state.origImg, 0, 0, c.width, c.height);
+  ctx.filter = 'none';
+  if (p.warm > 0) {
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.fillStyle = 'rgba(255,'+(200-p.warm)+','+(150-p.warm*2)+','+(p.warm*0.005)+')';
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  if (p.grain > 0) {
+    var id = ctx.getImageData(0,0,c.width,c.height);
+    var d = id.data;
+    for (var i=0;i<d.length;i+=4) {
+      var n = (Math.random()-.5)*p.grain*2.2;
+      d[i]   = Math.min(255,Math.max(0,d[i]+n));
+      d[i+1] = Math.min(255,Math.max(0,d[i+1]+n*.9));
+      d[i+2] = Math.min(255,Math.max(0,d[i+2]+n*.8));
+    }
+    ctx.putImageData(id,0,0);
+  }
+  state.filteredCanvas = c;
+}
+
+/* ── 배경 제거 + 스티커 변환 ── */
+async function convertSticker() {
+  if (!state.origImg) return;
+  showLoading('배경 제거 중...');
+
+  try {
+    var origC = document.createElement('canvas');
+    var r = Math.min(800/state.origImg.width, 800/state.origImg.height);
+    origC.width = Math.round(state.origImg.width*r);
+    origC.height = Math.round(state.origImg.height*r);
+    origC.getContext('2d').drawImage(state.origImg, 0, 0, origC.width, origC.height);
+    var b64 = origC.toDataURL('image/jpeg', 0.85).split(',')[1];
+
+    var res = await fetch('/api/removebg', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({image_file_b64: b64})
+    });
+
+    if (!res.ok) throw new Error('배경 제거 실패');
+    var data = await res.json();
+
+    setLoading('5s 필터 입히는 중...');
+
+    var noBgImg = new Image();
+    noBgImg.onload = function() {
+      var p = getFP();
+      var bw = p.bw;
+      var W = noBgImg.width, H = noBgImg.height;
+      var sW = W+bw*2, sH = H+bw*2;
+
+      var tmp = document.createElement('canvas');
+      tmp.width=W; tmp.height=H;
+      var tctx = tmp.getContext('2d');
+      tctx.filter = 'saturate('+p.sat+'%) contrast('+p.con+'%) brightness(96%) sepia('+Math.round(p.warm*.5)+'%)';
+      tctx.drawImage(noBgImg,0,0);
+      tctx.filter='none';
+      if(p.warm>0){
+        tctx.globalCompositeOperation='multiply';
+        tctx.fillStyle='rgba(255,'+(200-p.warm)+','+(150-p.warm*2)+','+(p.warm*.005)+')';
+        tctx.fillRect(0,0,W,H);
+        tctx.globalCompositeOperation='source-over';
+      }
+      if(p.grain>0){
+        var id=tctx.getImageData(0,0,W,H);
+        var d=id.data;
+        for(var i=0;i<d.length;i+=4){
+          var n=(Math.random()-.5)*p.grain*2.2;
+          d[i]=Math.min(255,Math.max(0,d[i]+n));
+          d[i+1]=Math.min(255,Math.max(0,d[i+1]+n*.9));
+          d[i+2]=Math.min(255,Math.max(0,d[i+2]+n*.8));
+        }
+        tctx.putImageData(id,0,0);
+      }
+
+      var out = document.getElementById('canvas-filtered');
+      out.width=sW; out.height=sH;
+      var ctx=out.getContext('2d');
+      ctx.clearRect(0,0,sW,sH);
+
+      for(var a=0;a<Math.PI*2;a+=Math.PI/20){
+        for(var rr=1;rr<=bw;rr++){
+          ctx.drawImage(tmp,bw+Math.cos(a)*rr,bw+Math.sin(a)*rr);
+        }
+      }
+      var wc=document.createElement('canvas');
+      wc.width=sW; wc.height=sH;
+      var wctx=wc.getContext('2d');
+      wctx.drawImage(out,0,0);
+      wctx.globalCompositeOperation='source-in';
+      wctx.fillStyle='white';
+      wctx.fillRect(0,0,sW,sH);
+      ctx.clearRect(0,0,sW,sH);
+      ctx.drawImage(wc,0,0);
+      ctx.drawImage(tmp,bw,bw);
+
+      state.stickerUrl = out.toDataURL('image/png');
+      document.getElementById('btn-add').disabled = false;
+      hideLoading();
+      setCamStatus('완성! 스크랩북에 저장해요', 'ok');
+    };
+    noBgImg.src = 'data:image/png;base64,' + data.result_b64;
+
+  } catch(e) {
+    hideLoading();
+    setCamStatus('배경 제거 실패 — 필터만 적용할게요', 'go');
+    applyBorderOnly();
+  }
+}
+
+function applyBorderOnly() {
+  if (!state.filteredCanvas) return;
+  var p = getFP(); var bw = p.bw;
+  var src = state.filteredCanvas;
+  var sW=src.width+bw*2, sH=src.height+bw*2;
+  var out=document.getElementById('canvas-filtered');
+  out.width=sW; out.height=sH;
+  var ctx=out.getContext('2d');
+  ctx.fillStyle='white';
+  ctx.fillRect(0,0,sW,sH);
+  ctx.strokeStyle='#D85A30'; ctx.lineWidth=3;
+  ctx.strokeRect(bw/2,bw/2,sW-bw,sH-bw);
+  ctx.drawImage(src,bw,bw);
+  state.stickerUrl=out.toDataURL('image/png');
+  document.getElementById('btn-add').disabled=false;
+}
+
+function addToScrapbook() {
+  if (!state.stickerUrl) return;
+  state.stickers.push(state.stickerUrl);
+  localStorage.setItem('nd_stickers', JSON.stringify(state.stickers));
+  state.missions[Math.floor(Math.random()*3)].done = true;
+  showToast('스티커가 스크랩북에 추가됐어요!');
+  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('filter-controls').style.display = 'none';
+  document.getElementById('btn-convert').disabled = true;
+  document.getElementById('btn-add').disabled = true;
+  state.origImg = null; state.stickerUrl = null;
+  document.getElementById('file-input').value = '';
+  setCamStatus('사진을 찍거나 불러오면 자동으로 변환돼요', '');
+  setTimeout(function(){ goScreen('scrapbook'); }, 800);
+}
+
+/* ── 스크랩북 ── */
+var sbSelected = null;
+var sbZTop = 10;
+
+function renderScrapbook() {
+  var tray = document.getElementById('sticker-tray');
+  if (state.stickers.length === 0) {
+    tray.innerHTML = '<div class="tray-empty">아직 스티커가 없어요</div>';
+  } else {
+    tray.innerHTML = '';
+    state.stickers.forEach(function(url, i) {
+      var item = document.createElement('div');
+      item.className = 'tray-item';
+      var img = document.createElement('img');
+      img.src = url;
+      item.appendChild(img);
+      item.addEventListener('click', function() { placeSticker(url); });
+      tray.appendChild(item);
+    });
+  }
+  restoreCanvas();
+}
+
+function placeSticker(url) {
+  var wrap = document.getElementById('scrapbook-canvas-wrap');
+  var el = document.createElement('div');
+  el.className = 'placed-sticker';
+  var size = 80;
+  var x = Math.random()*(wrap.offsetWidth-size-20)+10;
+  var y = Math.random()*(wrap.offsetHeight-size-20)+10;
+  var rot = (Math.random()-0.5)*20;
+  el.style.cssText='left:'+x+'px;top:'+y+'px;width:'+size+'px;height:'+size+'px;z-index:'+(++sbZTop)+';transform:rotate('+rot+'deg)';
+  el.dataset.rot = rot;
+  var img = document.createElement('img');
+  img.src = url;
+  el.appendChild(img);
+  var del = document.createElement('button');
+  del.className='del-btn'; del.textContent='✕';
+  del.onclick=function(e){ e.stopPropagation(); el.remove(); saveCanvas(); };
+  el.appendChild(del);
+  var rh = document.createElement('div');
+  rh.className='resize-h';
+  el.appendChild(rh);
+  wrap.appendChild(el);
+  setupStickerDrag(el, rh);
+  selectSticker(el);
+  saveCanvas();
+}
+
+function selectSticker(el) {
+  if (sbSelected && sbSelected !== el) sbSelected.classList.remove('sel');
+  sbSelected = el;
+  el.classList.add('sel');
+  el.style.zIndex = ++sbZTop;
+}
+
+document.getElementById('scrapbook-canvas-wrap').addEventListener('pointerdown', function(e) {
+  if (e.target === this || e.target.classList.contains('rule')) {
+    if (sbSelected) { sbSelected.classList.remove('sel'); sbSelected = null; }
+  }
+});
+
+function setupStickerDrag(el, rh) {
+  var dragging=false, resizing=false;
+  var startX,startY,origX,origY,startW;
+
+  el.addEventListener('pointerdown', function(e) {
+    if (e.target===rh || e.target.classList.contains('del-btn')) return;
+    e.stopPropagation();
+    selectSticker(el);
+    dragging=true;
+    startX=e.clientX; startY=e.clientY;
+    origX=parseFloat(el.style.left); origY=parseFloat(el.style.top);
+    el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove', function(e) {
+    if (!dragging) return;
+    var wrap=document.getElementById('scrapbook-canvas-wrap');
+    var nx=origX+(e.clientX-startX);
+    var ny=origY+(e.clientY-startY);
+    nx=Math.max(0,Math.min(wrap.offsetWidth-parseFloat(el.style.width),nx));
+    ny=Math.max(0,Math.min(wrap.offsetHeight-parseFloat(el.style.height),ny));
+    el.style.left=nx+'px'; el.style.top=ny+'px';
+  });
+  el.addEventListener('pointerup', function(){ if(dragging){ dragging=false; saveCanvas(); } });
+
+  rh.addEventListener('pointerdown', function(e) {
+    e.stopPropagation(); resizing=true;
+    startX=e.clientX; startY=e.clientY;
+    startW=parseFloat(el.style.width);
+    rh.setPointerCapture(e.pointerId);
+  });
+  rh.addEventListener('pointermove', function(e) {
+    if (!resizing) return;
+    var d=Math.hypot(e.clientX-startX,e.clientY-startY)*(e.clientX>startX?1:-1);
+    var nw=Math.max(40,Math.min(200,startW+d));
+    el.style.width=nw+'px'; el.style.height=nw+'px';
+  });
+  rh.addEventListener('pointerup', function(){ if(resizing){ resizing=false; saveCanvas(); } });
+}
+
+function saveCanvas() {
+  var items=[];
+  document.querySelectorAll('.placed-sticker').forEach(function(el){
+    items.push({
+      src: el.querySelector('img').src,
+      x: el.style.left, y: el.style.top,
+      w: el.style.width, rot: el.dataset.rot||0, z: el.style.zIndex
+    });
+  });
+  localStorage.setItem('nd_canvas', JSON.stringify(items));
+}
+
+function restoreCanvas() {
+  var wrap=document.getElementById('scrapbook-canvas-wrap');
+  wrap.querySelectorAll('.placed-sticker').forEach(function(el){ el.remove(); });
+  var items=JSON.parse(localStorage.getItem('nd_canvas')||'[]');
+  items.forEach(function(item){
+    var el=document.createElement('div');
+    el.className='placed-sticker';
+    el.style.cssText='left:'+item.x+';top:'+item.y+';width:'+item.w+';height:'+item.w+';z-index:'+item.z+';transform:rotate('+item.rot+'deg)';
+    el.dataset.rot=item.rot;
+    var img=document.createElement('img'); img.src=item.src; el.appendChild(img);
+    var del=document.createElement('button'); del.className='del-btn'; del.textContent='✕';
+    del.onclick=function(e){ e.stopPropagation(); el.remove(); saveCanvas(); };
+    el.appendChild(del);
+    var rh=document.createElement('div'); rh.className='resize-h'; el.appendChild(rh);
+    wrap.appendChild(el);
+    setupStickerDrag(el,rh);
+  });
+}
+
+function exportScrapbook() {
+  var wrap=document.getElementById('scrapbook-canvas-wrap');
+  if(sbSelected){ sbSelected.classList.remove('sel'); }
+  setTimeout(function(){
+    var html2c = document.createElement('script');
+    showToast('스크랩북을 이미지로 저장하려면 html2canvas 라이브러리가 필요해요');
+    if(sbSelected) sbSelected.classList.add('sel');
+  },100);
+}
+
+/* ── 유틸 ── */
+function setCamStatus(msg, cls) {
+  var el=document.getElementById('cam-status');
+  el.textContent=msg; el.className='status-bar '+(cls||'');
+}
+function showLoading(msg) {
+  document.getElementById('loading-text').textContent=msg||'처리 중...';
+  document.getElementById('loading').classList.add('show');
+}
+function setLoading(msg) { document.getElementById('loading-text').textContent=msg; }
+function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+function showToast(msg) {
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+renderHome();
+</script>
+</body>
+</html>
